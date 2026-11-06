@@ -1,7 +1,8 @@
 # c-from-scratch
 
-Jednoduchý **zásobník (stack)** v čistém C. Je to konzolový program s menu, rozdělený do tří
-souborů (viz níže). Kód je okomentovaný česky. Projekt slouží k připomenutí základů C.
+Jednoduchý **zásobník (stack)** v čistém C. Je to konzolový program s menu. Paměť na prvky
+si bere z haldy přes `malloc` a podle potřeby ji zvětšuje přes `realloc`. Kód je okomentovaný
+česky. Projekt slouží k připomenutí základů C.
 
 ## Co je zásobník
 
@@ -14,33 +15,42 @@ Tomu se říká **LIFO** (*Last In, First Out*).
 | `pop`   | vyndá horní číslo |
 | `peek`  | ukáže horní číslo, ale nevyndá ho |
 
-Zásobník je pole o pěti prvcích a k němu počítadlo `count`. Když je plný, program ohlásí
-*stack overflow*. Když je prázdný a chceš z něj něco vyndat, ohlásí *stack underflow*.
+Když chceš vyndat číslo z prázdného zásobníku, program ohlásí *stack underflow*.
+
+## Jak zásobník pracuje s pamětí
+
+- `stack_init` si přes **`malloc`** vezme z haldy místo na 2 čísla.
+- Když se místo zaplní, `stack_push` ho přes **`realloc`** zdvojnásobí (2 → 4 → 8 …).
+  Program přitom vypíše starou a novou adresu, takže vidíš, že se pole v paměti přestěhovalo.
+- Na konci `stack_free` vrátí paměť přes **`free`**. C nemá garbage collector jako C#,
+  takže každý `malloc` musí mít svůj `free`.
+
+V C# tohle dělá `List<int>` sám. Tady to vidíš ručně.
 
 ## Co si v kódu procvičíš
 
 - `struct` a `typedef`
 - **ukazatele**: funkce dostávají `Stack *s`, aby mohly měnit původní zásobník
 - vracení hodnoty přes ukazatel (`int *out`)
+- **dynamickou paměť**: `malloc`, `realloc`, `free`, `sizeof`, kontrolu na `NULL`
 - `#define`, `bool`, `switch`, cyklus `do … while`
 - čtení vstupu přes `scanf` a ošetření špatného vstupu
-- rozdělení kódu na hlavičku (`.h`) a implementaci (`.c`), statická knihovna
+- rozdělení kódu na hlavičku (`.h`) a implementaci (`.c`), statickou knihovnu
 
 ## Ukázka
 
 ```
-=== ZÁSOBNÍK ===
-1) push  – vložit číslo
-2) pop   – vyndat číslo
-3) peek  – co je nahoře?
-4) vypsat zásobník
-0) konec
+Volba: 1
+Číslo: 30
+  [realloc: kapacita 2 -> 4, paměť 00000227004236A0 -> 0000022700423920]
+Vloženo 30.
+
 Volba: 4
   |    30 |  <- vrchol
   |    20 |
   |    10 |
   +-------+
-  prvků: 3 / 5
+  prvků: 3, kapacita: 4, paměť na haldě: 0000022700423920
 ```
 
 ## Jak to spustit ve Visual Studiu
@@ -55,13 +65,6 @@ Potřebuješ workload **„Desktop development with C++“**. Doinstaluješ ho p
 Projekt nemá `.sln`, protože používá **CMake**. To je běžný způsob, jak se staví C a C++
 projekty na Windows i Linuxu. Visual Studio ho otevře přímo jako složku.
 
-## Úkoly na procvičení
-
-1. Přidej operaci „vyprázdni zásobník“.
-2. Zvětši zásobník na 100 prvků a zkontroluj, že se nic dalšího nerozbije.
-3. Udělej zásobník, který roste: místo pole použij `malloc` a `realloc`.
-4. Napiš frontu (*queue*, FIFO) a porovnej ji se zásobníkem.
-
 ## Struktura projektu
 
 ```
@@ -69,7 +72,7 @@ projekty na Windows i Linuxu. Visual Studio ho otevře přímo jako složku.
 ├── CMakeLists.txt   # build: knihovna "stack" + program "zasobnik"
 └── src/
     ├── stack.h      # hlavička – CO zásobník umí (typ Stack, seznam funkcí)
-    ├── stack.c      # implementace – JAK to dělá
+    ├── stack.c      # implementace – JAK to dělá (malloc, realloc, free)
     └── main.c       # jen menu, zásobník používá přes #include "stack.h"
 ```
 
@@ -83,3 +86,9 @@ Překladač C čte každý `.c` soubor zvlášť a shora dolů. Funkci tedy mus�
 někdo zavolá. `main.c` si proto přes `#include "stack.h"` vloží deklarace. Těla funkcí najde
 až **linker**, když spojuje `main.c` se statickou knihovnou `stack.lib` (vznikne ze `stack.c`)
 do výsledného `zasobnik.exe`.
+
+## Úkoly na procvičení
+
+1. Přidej operaci „vyprázdni zásobník“.
+2. Když se zásobník vyprázdní pod čtvrtinu kapacity, zmenši paměť přes `realloc` na polovinu.
+3. Napiš frontu (*queue*, FIFO) a porovnej ji se zásobníkem.

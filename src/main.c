@@ -28,8 +28,11 @@ int main(void)
     SetConsoleOutputCP(CP_UTF8);   /* ať konzole Windows ukáže háčky a čárky */
 #endif
 
-    Stack stack;          /* proměnná typu Stack – leží na zásobníku programu :) */
-    stack_init(&stack);   /* &stack = adresa proměnné stack */
+    Stack stack;                /* proměnná typu Stack – leží na zásobníku programu :) */
+    if (!stack_init(&stack)) {  /* &stack = adresa proměnné stack */
+        printf("Došla paměť.\n");
+        return 1;
+    }
 
     int choice;
     do {
@@ -64,7 +67,7 @@ int main(void)
             if (stack_push(&stack, value)) {
                 printf("Vloženo %d.\n", value);
             } else {
-                printf("Zásobník je plný! (stack overflow)\n");
+                printf("Došla paměť!\n");
             }
             break;
 
@@ -98,5 +101,6 @@ int main(void)
         }
     } while (choice != 0);
 
+    stack_free(&stack);   /* vrátit paměť z malloc */
     return 0;   /* 0 = program skončil v pořádku */
 }

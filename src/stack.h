@@ -14,21 +14,23 @@
 
 #include <stdbool.h>   /* typ bool, true, false */
 
-/* Maximální počet prvků. #define je jen textová náhrada:
- * překladač všude místo STACK_SIZE vidí 5. */
-#define STACK_SIZE 5
+/* Kolik místa si zásobník vezme na začátku. Schválně málo,
+ * ať je hned vidět, jak se zvětšuje. */
+#define STACK_START_CAPACITY 2
 
-/* Zásobník = pole na data + číslo, kolik prvků v něm zrovna je. */
+/* Zásobník = ukazatel na pole na HALDĚ + kolik prvků v něm je
+ * + kolik se jich tam vejde, než bude potřeba víc paměti. */
 typedef struct {
-    int items[STACK_SIZE];
-    int count;              /* 0 = prázdný, STACK_SIZE = plný */
+    int *items;     /* pole z malloc – na začátku neexistuje, vznikne v stack_init */
+    int  count;     /* kolik prvků v zásobníku je */
+    int  capacity;  /* kolik prvků se vejde do aktuálně alokované paměti */
 } Stack;
 
 /* Jen deklarace (hlavičky funkcí se středníkem, bez těla).
  * Těla funkcí jsou v stack.c. */
-void stack_init(Stack *s);
+bool stack_init(Stack *s);   /* false = došla paměť */
+void stack_free(Stack *s);   /* vrátí paměť – NUTNO zavolat na konci! */
 bool stack_is_empty(const Stack *s);
-bool stack_is_full(const Stack *s);
 bool stack_push(Stack *s, int value);
 bool stack_pop(Stack *s, int *out);
 bool stack_peek(const Stack *s, int *out);
